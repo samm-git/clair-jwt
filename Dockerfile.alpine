@@ -15,8 +15,6 @@
 FROM golang:1.12-alpine AS build-env
 LABEL maintainer "Jimmy Zelinskie <jimi@redhat.com>"
 
-ARG GIT_TAG
-
 RUN apk add --no-cache git bzr rpm xz supervisor gcc musl-dev
 
 # Build cfssl and jwtproxy
@@ -25,7 +23,8 @@ RUN go get -u github.com/cloudflare/cfssl/cmd/cfssljson
 RUN go get -u github.com/coreos/jwtproxy/cmd/jwtproxy
 
 # Copy clair
-FROM quay.io/coreos/clair:${GIT_TAG} as clair-build
+ARG CLAIR=quay.io/coreos/clair:v2.1.2
+FROM $CLAIR as clair-build
 
 FROM alpine:3.7 AS runtime-env
 LABEL maintainer "Jimmy Zelinskie <jimi@redhat.com>"
