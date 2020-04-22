@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 FROM golang:1.12-alpine AS build-env
 LABEL maintainer "Jimmy Zelinskie <jimi@redhat.com>"
 
@@ -22,11 +21,8 @@ RUN go get -u github.com/cloudflare/cfssl/cmd/cfssl
 RUN go get -u github.com/cloudflare/cfssl/cmd/cfssljson
 RUN go get -u github.com/coreos/jwtproxy/cmd/jwtproxy
 
-# Copy clair
+FROM alpine
 ARG CLAIR=quay.io/coreos/clair:v2.1.2
-FROM $CLAIR as clair-build
-
-FROM alpine:3.7 AS runtime-env
 LABEL maintainer "Jimmy Zelinskie <jimi@redhat.com>"
 
 ENV CLAIRDIR /clair
@@ -40,7 +36,7 @@ RUN apk add --no-cache supervisor ca-certificates \
 # Copy built binaries into the runtime image
 COPY --from=build-env /go/bin/cfssl /usr/local/bin/cfssl
 COPY --from=build-env /go/bin/cfssljson /usr/local/bin/cfssljson
-COPY --from=clair-build /clair /usr/local/bin/clair
+COPY --from=quay.io/coreos/clair:v2.1.2 /clair /usr/local/bin/clair
 COPY --from=build-env /go/bin/jwtproxy /usr/local/bin/jwtproxy
 
 # Add the init scripts
